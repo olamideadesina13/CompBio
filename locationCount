@@ -1,0 +1,51 @@
+import math
+#calculate distance finds the distance between two points in kilometres
+def CalculateDistance(Lat1, Lon1, Lat2, Lon2):
+
+    Lat1 = float(Lat1)
+    Lon1 = float(Lon1)
+    Lat2 = float(Lat2)
+    Lon2 = float(Lon2)
+    
+    nDLat = (Lat1 - Lat2) * 0.017453293
+    nDLon = (Lon1 - Lon2) * 0.017453293
+
+    Lat1 = Lat1 * 0.017453293
+    Lat2 = Lat2 * 0.017453293
+
+    nA = (math.sin(nDLat/2) ** 2) + math.cos(Lat1) * math.cos(Lat2) * (math.sin(nDLon/2) ** 2 )
+    nC = 2 * math.atan2(math.sqrt(nA),math.sqrt( 1 - nA ))
+    nD = 6372.797 * nC
+
+    return nD
+
+# LineToList takes a string and converts it to a list breaking it on the tabs.
+def LineToList(Str):
+    Str = Str.rstrip()
+    return Str.split("\t")
+
+#start of main function
+
+def LocationCount(FileName, Lat1, Lon1, Distance): #function takes in four parameters, a file, latitude, longitude and a distance in kilometres
+    AnimalsList = [] #empty list where animals within the range will be added
+    Distance = float(Distance)
+    FIn = open(FileName, "r") #opening the file in read mode to read the file data
+
+    for Line in FIn: #For loop so the following code will be applied to each line of the file
+    
+        SpeciesInfo = (LineToList(Line)) #the information for each species separated by a tab is now a python list
+
+        Lat2 = SpeciesInfo[1] #the latitude is the second element of the list
+        Lon2 = SpeciesInfo[2] #the longitiude is the third element of the list
+
+        Radius = CalculateDistance(Lat1, Lon1, Lat2, Lon2) #radius is the distance between the two locations
+        
+        if Radius < Distance: #distance is input by the user
+            AnimalsList.append(SpeciesInfo[0]) #this if statement means if the distance calculated between the location of the mammal and the set location  
+											   #is less than the distance put in by the user, then add that mammal to the empty list: AnimalsList
+
+    FIn.close() #manually closes the file
+    return (len(AnimalsList)) #using the len function here to count the number of animals in the new list. The function returns this value
+
+NumberOfAnimals = LocationCount("Mammal.txt", 54.988056 , -1.619444 , 10.0)
+print ("Number of animals within range is", NumberOfAnimals)
