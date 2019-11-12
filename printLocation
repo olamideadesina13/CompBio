@@ -1,0 +1,56 @@
+import math
+#calculate distance finds the distance between two points in kilometres
+def CalculateDistance(Lat1, Lon1, Lat2, Lon2):
+
+    Lat1 = float(Lat1)
+    Lon1 = float(Lon1)
+    Lat2 = float(Lat2)
+    Lon2 = float(Lon2)
+    
+    nDLat = (Lat1 - Lat2) * 0.017453293
+    nDLon = (Lon1 - Lon2) * 0.017453293
+
+    Lat1 = Lat1 * 0.017453293
+    Lat2 = Lat2 * 0.017453293
+
+    nA = (math.sin(nDLat/2) ** 2) + math.cos(Lat1) * math.cos(Lat2) * (math.sin(nDLon/2) ** 2 )
+    nC = 2 * math.atan2(math.sqrt(nA),math.sqrt( 1 - nA ))
+    nD = 6372.797 * nC
+
+    return nD
+
+# LineToList takes a string and converts it to a list breaking it on the tabs.
+def LineToList(Str):
+    Str = Str.rstrip()
+    return Str.split("\t")
+
+#start of main function
+def PrintLocation(FileName,Lat1, Lon1, Distance): #function takes in four parameters, a file, latitude, longitude and a distance in kilometres
+    AnimalsList = [] #empty list where animals within the range will be added
+    Distance = float(Distance)
+
+    FOut = open("Test02.kml", "w") #opening a new file in write mode because we are writing a long kml file that will be imported to Google Earth
+    FOut.write("<Document>\n") #FOut.write is the format to write something in the new file. Similar to the print function where what you want to print goes into the brackets
+
+    FIn = open (FileName, "r") #now opening the file with all the mammal information that is needed to write the kml. Information has to be read from this file to write the new file
+    for Line in FIn: #For loop so the following code will be applied to each line of the file
+	
+        SpeciesInfo = (LineToList(Line))
+
+        Lat2 = SpeciesInfo[1]
+        Lon2 = SpeciesInfo[2]
+
+        Radius = CalculateDistance(Lat1, Lon1, Lat2, Lon2)
+        if Radius < Distance: #distance is input by the user
+            FOut.write("\t<Placemark>\n")
+            FOut.write("\t\t<description>" + SpeciesInfo[0] + "</description>\n") #the name of the species is added as the description
+            FOut.write("\t\t<Point>\n")
+            FOut.write("\t\t\t<coordinates>" + SpeciesInfo[2] +  ", " + SpeciesInfo[1] + "</coordinates>\n") #adding a comma and space because this is the proper kml file format
+            FOut.write("\t\t</Point>\n")																     #longitude goes first in the coordinates
+            FOut.write("\t</Placemark>\n\n")
+		#\t and \n are added to create tabs and new lines to make the proper kml format
+    FIn.close() #manually closing the mammal information file
+    FOut.write("</Document>\n\n") #printing the last tine of the kml file
+    FOut.close() #manually closing the newly written file. it can then be found in the same folder location where the python code is saved as a text file
+
+PrintLocation("Mammal.txt", 51.452884, -0.973906, 15.0)
